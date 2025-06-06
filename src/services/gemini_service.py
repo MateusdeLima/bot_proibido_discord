@@ -1,6 +1,7 @@
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+import unicodedata
 
 load_dotenv()
 
@@ -9,15 +10,31 @@ class GeminiService:
         genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
         self.model = genai.GenerativeModel('gemini-1.5-flash')
 
-    def _ler_politicas_txt(self):
+    def _normalize(self, text):
+        return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII').lower()
+
+    def _buscar_trechos_politicas(self, termo):
         try:
             with open('Politicas Proibidos - Shopee.txt', 'r', encoding='utf-8') as f:
-                return f.read()
+                texto = f.read()
+            texto_norm = self._normalize(texto)
+            termo_norm = self._normalize(termo)
+            trechos = []
+            idx = 0
+            while True:
+                idx = texto_norm.find(termo_norm, idx)
+                if idx == -1:
+                    break
+                start = max(0, idx - 200)
+                end = min(len(texto), idx + 200)
+                trecho = texto[start:end].replace('\n', ' ')
+                trechos.append(trecho)
+                idx += len(termo_norm)
+            return trechos if trechos else ['Nenhum trecho relevante encontrado no arquivo de políticas.']
         except Exception as e:
-            return f'Não foi possível ler o arquivo de políticas: {e}'
+            return [f'Não foi possível ler o arquivo de políticas: {e}']
 
     async def analyze_product(self, product_info):
-        # Inclui apenas os trechos relevantes dos links na análise
         trechos_texto = ''
         if 'trechos_relevantes' in product_info and product_info['trechos_relevantes']:
             for url, trechos in product_info['trechos_relevantes'].items():
@@ -25,21 +42,22 @@ class GeminiService:
                     trechos_texto += f'\nTrecho relevante do link {url if url != "tópico" else "tópico principal"}:\n{trecho}\n'
         else:
             trechos_texto = '\nNenhum trecho relevante encontrado nos links.'
-        politicas_txt = self._ler_politicas_txt()
+        trechos_politicas = self._buscar_trechos_politicas(product_info['name'])
+        trechos_politicas_txt = '\n'.join(trechos_politicas)
         prompt = f"""
         Você é um especialista nas políticas da Shopee. Analise o produto abaixo e determine se ele é PROIBIDO, RESTRITO ou PERMITIDO na plataforma Shopee, seguindo as regras:
         - PROIBIDO: Não pode ser vendido de jeito nenhum na plataforma. Se não houver menção de que pode ser vendido com autorização ou documento, considere como proibido.
         - RESTRITO: Só pode ser vendido se houver menção explícita de que é permitido vender com autorização especial, licença ou documento. Se não houver essa menção, não considere como restrito.
         - PERMITIDO: Pode ser vendido normalmente. Se não houver menção ao produto nas políticas, ou se houver menção clara de permissão, considere como permitido.
 
-        IMPORTANTE: Faça uma análise criteriosa dos trechos das políticas e dos links abaixo, bem como do conteúdo do arquivo de políticas proibidas da Shopee (texto completo abaixo). Só classifique como restrito se houver menção clara de venda com autorização, licença ou documento. Caso contrário, se houver qualquer proibição, classifique como proibido. Sempre cite o trecho exato da política que justifica a classificação.
+        IMPORTANTE: Faça uma análise criteriosa dos trechos das políticas e dos links abaixo, bem como dos trechos extraídos do arquivo de políticas proibidas da Shopee (abaixo). Só classifique como restrito se houver menção clara de venda com autorização, licença ou documento. Caso contrário, se houver qualquer proibição, classifique como proibido. Sempre cite o trecho exato da política que justifica a classificação.
 
         Produto: {product_info['name']}
         Trechos do site:
         {trechos_texto}
 
-        Conteúdo completo das políticas proibidas coletadas manualmente:
-        {politicas_txt[:8000]}
+        Trechos relevantes do arquivo de políticas proibidas:
+        {trechos_politicas_txt}
 
         Forneça uma resposta estruturada com:
         1. Status (Proibido/Restrito/Permitido)
