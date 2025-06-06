@@ -20,11 +20,11 @@ class GeminiService:
             trechos_texto = '\nNenhum trecho relevante encontrado nos links.'
         prompt = f"""
         Você é um especialista nas políticas da Shopee. Analise o produto abaixo e determine se ele é PROIBIDO, RESTRITO ou PERMITIDO na plataforma Shopee, seguindo as regras:
-        - PROIBIDO: Não pode ser vendido de jeito nenhum na plataforma, independentemente de autorização, documento ou vendedor. Exemplo: armas de fogo, facas acima de 30cm, drogas ilícitas.
-        - RESTRITO: Só pode ser vendido por alguns vendedores com autorização especial ou documento, ou em condições específicas. Exemplo: medicamentos controlados, produtos veterinários, facas de até 30cm (se permitido com restrição).
-        - PERMITIDO: Pode ser vendido normalmente.
+        - PROIBIDO: Não pode ser vendido de jeito nenhum na plataforma. Se não houver menção de que pode ser vendido com autorização ou documento, considere como proibido.
+        - RESTRITO: Só pode ser vendido se houver menção explícita de que é permitido vender com autorização especial, licença ou documento. Se não houver essa menção, não considere como restrito.
+        - PERMITIDO: Pode ser vendido normalmente. Se não houver menção ao produto nas políticas, ou se houver menção clara de permissão, considere como permitido.
 
-        IMPORTANTE: Leia atentamente os trechos das políticas e dos links abaixo. Se encontrar o produto listado como proibido, retorne PROIBIDO. Se encontrar como restrito, retorne RESTRITO. Sempre cite o trecho exato da política que justifica a classificação.
+        IMPORTANTE: Faça uma análise criteriosa dos trechos das políticas e dos links abaixo. Só classifique como restrito se houver menção clara de venda com autorização, licença ou documento. Caso contrário, se houver qualquer proibição, classifique como proibido. Sempre cite o trecho exato da política que justifica a classificação.
 
         Responda de forma resumida, focando nos principais pontos e respeitando o limite de 1024 caracteres para o campo de detalhes.
 
