@@ -14,22 +14,32 @@ class GeminiService:
         return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('ASCII').lower()
 
     def _buscar_trechos_politicas(self, termo):
+        # Lista de sinônimos e palavras relacionadas para melhorar a busca
+        sinonimos = [termo]
+        termo_norm = self._normalize(termo)
+        if termo_norm in ["oculos de grau", "oculos com grau", "oculos", "armação de oculos", "armações de oculos", "armação", "armações"]:
+            sinonimos += [
+                "oculos de grau", "oculos com grau", "oculos", "armação de oculos", "armações de oculos", "armação", "armações"
+            ]
+        # Adicione outros casos específicos conforme necessário
         try:
             with open('Politicas Proibidos - Shopee.txt', 'r', encoding='utf-8') as f:
                 texto = f.read()
             texto_norm = self._normalize(texto)
-            termo_norm = self._normalize(termo)
             trechos = []
-            idx = 0
-            while True:
-                idx = texto_norm.find(termo_norm, idx)
-                if idx == -1:
-                    break
-                start = max(0, idx - 200)
-                end = min(len(texto), idx + 200)
-                trecho = texto[start:end].replace('\n', ' ')
-                trechos.append(trecho)
-                idx += len(termo_norm)
+            for termo_s in sinonimos:
+                termo_s_norm = self._normalize(termo_s)
+                idx = 0
+                while True:
+                    idx = texto_norm.find(termo_s_norm, idx)
+                    if idx == -1:
+                        break
+                    # Ampliar o contexto: 400 caracteres antes e depois
+                    start = max(0, idx - 400)
+                    end = min(len(texto), idx + 400)
+                    trecho = texto[start:end].replace('\n', ' ')
+                    trechos.append(trecho)
+                    idx += len(termo_s_norm)
             return trechos if trechos else ['Nenhum trecho relevante encontrado no arquivo de políticas.']
         except Exception as e:
             return [f'Não foi possível ler o arquivo de políticas: {e}']
