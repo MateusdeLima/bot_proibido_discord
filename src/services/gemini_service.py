@@ -60,6 +60,8 @@ class GeminiService:
         - RESTRITO: Só pode ser vendido se houver menção explícita de que é permitido vender com autorização especial, licença ou documento. Se não houver essa menção, não considere como restrito.
         - PERMITIDO: Pode ser vendido normalmente. Se não houver menção ao produto nas políticas, ou se houver menção clara de permissão, considere como permitido.
 
+        ATENÇÃO: Considere como PROIBIDOS todos os produtos que sejam usados, reembalados, fracionados, testados, abertos ou similares, mesmo que não haja menção direta ao termo exato do produto nas políticas. Por exemplo, perfumes fracionados devem ser considerados como perfumes usados, que são proibidos. O mesmo vale para qualquer cosmético ou produto de uso pessoal nessas condições.
+
         IMPORTANTE: Faça uma análise criteriosa dos trechos das políticas e dos links abaixo, bem como dos trechos extraídos do arquivo de políticas proibidas da Shopee (abaixo). Só classifique como restrito se houver menção clara de venda com autorização, licença ou documento. Caso contrário, se houver qualquer proibição, classifique como proibido. Sempre cite o trecho exato da política que justifica a classificação.
 
         Produto: {product_info['name']}
