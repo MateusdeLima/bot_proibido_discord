@@ -17,9 +17,20 @@ class GeminiService:
         # Lista de sinônimos e palavras relacionadas para melhorar a busca
         sinonimos = [termo]
         termo_norm = self._normalize(termo)
+        # Regras específicas para óculos
         if termo_norm in ["oculos de grau", "oculos com grau", "oculos", "armação de oculos", "armações de oculos", "armação", "armações"]:
             sinonimos += [
                 "oculos de grau", "oculos com grau", "oculos", "armação de oculos", "armações de oculos", "armação", "armações"
+            ]
+        # Regras específicas para facas e lâminas
+        if "faca" in termo_norm or "lâmina" in termo_norm or "lamina" in termo_norm:
+            sinonimos += [
+                "faca", "facas", "lâmina", "lamina", "lâminas", "laminas", "faca de cozinha", "facas de cozinha", "faca de acampamento", "faca de sobrevivência", "faca longa", "faca tradicional", "faca cerimonial", "faca de cinto", "faca escondida", "lâmina maior que 30 centímetros", "lâmina menor que 30 centímetros"
+            ]
+        # Regras específicas para animais
+        if "animal" in termo_norm or "galinha" in termo_norm or "galo" in termo_norm or "cachorro" in termo_norm or "gato" in termo_norm or "ser vivo" in termo_norm:
+            sinonimos += [
+                "animal", "animais", "animal doméstico", "animais domésticos", "animal silvestre", "animais silvestres", "animal de criação", "animais de criação", "ser vivo", "seres vivos", "galinha", "galo", "cachorro", "gato", "partes de seres vivos", "produtos de animal", "produtos de animais", "produtos provindos de animais"
             ]
         # Adicione outros casos específicos conforme necessário
         try:
@@ -61,6 +72,10 @@ class GeminiService:
         - PERMITIDO: Pode ser vendido normalmente. Se não houver menção ao produto nas políticas, ou se houver menção clara de permissão, considere como permitido.
 
         ATENÇÃO: Considere como PROIBIDOS todos os produtos que sejam usados, reembalados, fracionados, testados, abertos ou similares, mesmo que não haja menção direta ao termo exato do produto nas políticas. Por exemplo, perfumes fracionados devem ser considerados como perfumes usados, que são proibidos. O mesmo vale para qualquer cosmético ou produto de uso pessoal nessas condições.
+
+        REGRA PARA FACAS E LÂMINAS: Facas e lâminas com área de corte maior que 30 centímetros (12 polegadas) são proibidas. Facas e lâminas com área de corte igual ou menor que 30 centímetros são permitidas, exceto se houver outra restrição específica. Sempre diferencie pelo tamanho da lâmina.
+
+        REGRA PARA ANIMAIS: É proibida a venda de qualquer animal vivo, parte de animal, ou produto proveniente de animal silvestre, doméstico ou de criação, mesmo que não haja menção direta ao termo exato do animal. Isso inclui galinhas, galos, cachorros, gatos, etc.
 
         IMPORTANTE: Faça uma análise criteriosa dos trechos das políticas e dos links abaixo, bem como dos trechos extraídos do arquivo de políticas proibidas da Shopee (abaixo). Só classifique como restrito se houver menção clara de venda com autorização, licença ou documento. Caso contrário, se houver qualquer proibição, classifique como proibido. Sempre cite o trecho exato da política que justifica a classificação.
 
